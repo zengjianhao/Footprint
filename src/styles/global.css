@@ -1,0 +1,48 @@
+:root {
+  --map-bg: #f3f5f7;
+  --land: #d5dbe3;
+  --land-hover: #b9c3cf;
+  --border: #ffffff;
+  --hover-outline: #1f2937;
+  --visited: #f59e0b;
+  --visited-hover: #d97706;
+  --tooltip-bg: #111827;
+  --tooltip-fg: #ffffff;
+  --text: #4b5563;
+
+  font-family:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', sans-serif;
+  color: var(--text);
+  background: var(--map-bg);
+  color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+}
+
+.app {
+  position: fixed;
+  inset: 0;
+}
+
+.app--status {
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+}
