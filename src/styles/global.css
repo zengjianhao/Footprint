@@ -5,8 +5,8 @@
   --border: #ffffff;
   --border-major: #7d8899;
   --hover-outline: #1f2937;
-  --visited: #f59e0b;
-  --visited-hover: #d97706;
+  --visited: #8ba5c7;
+  --visited-hover: #7692b6;
   --tooltip-bg: #111827;
   --tooltip-fg: #ffffff;
   --text: #4b5563;
@@ -82,4 +82,9 @@ body {
 
 .nav__current {
   font-size: 13px;
+}
+
+.nav__count {
+  font-size: 12px;
+  opacity: 0.8;
 }

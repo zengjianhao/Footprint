@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { City, Country } from './geo/types'
+import { deriveVisitedCountries } from './geo/visitedCountries'
 import { ChinaMap } from './map/ChinaMap'
 import { WorldMap } from './map/WorldMap'
+import { useVisitedCities } from './state/useVisited'
 
 type View = { kind: 'world' } | { kind: 'china' }
 
@@ -10,9 +12,9 @@ const CHINA_ENTRY_KEYS: ReadonlySet<string> = new Set(['156', '158', '344', '446
 
 function App() {
   const [view, setView] = useState<View>({ kind: 'world' })
-  // 已去过的国家 / 城市；后续接持久化与记录 UI，目前为空
-  const [visitedCountries] = useState<ReadonlySet<string>>(() => new Set())
-  const [visitedCities] = useState<ReadonlySet<string>>(() => new Set())
+  const { visitedCities, toggleCity } = useVisitedCities()
+  // 去过任何一个市，世界地图上对应的要素就点亮
+  const visitedCountries = useMemo(() => deriveVisitedCountries(visitedCities), [visitedCities])
 
   const goWorld = useCallback(() => setView({ kind: 'world' }), [])
 
@@ -20,10 +22,7 @@ function App() {
     if (CHINA_ENTRY_KEYS.has(country.key)) setView({ kind: 'china' })
   }, [])
 
-  const handleCityClick = useCallback((city: City) => {
-    // 后续：记录该市的足迹
-    console.info('city click', city.key, city.name, city.provinceName)
-  }, [])
+  const handleCityClick = useCallback((city: City) => toggleCity(city.key), [toggleCity])
 
   // Esc 返回世界地图
   useEffect(() => {
@@ -48,6 +47,9 @@ function App() {
             ‹ 世界地图
           </button>
           <span className="nav__current">中国</span>
+          {visitedCities.size > 0 && (
+            <span className="nav__count">已去过 {visitedCities.size} 个市</span>
+          )}
         </nav>
       )}
     </div>

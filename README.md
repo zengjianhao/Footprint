@@ -16,7 +16,7 @@ npm run data:china # 重新生成中国市级边界数据（需要联网，平�
 
 - 世界地图：Natural Earth 投影、太平洋居中；悬停显示中文国名，可缩放拖拽。
 - 中国地图：点击世界地图上的中国进入；精确到市级行政区，省界比市界更粗；右下角有南海诸岛附图（主图向南留出空间，附图不遮挡台湾与沿海；放大主图时附图淡出）。`‹ 世界地图` 按钮或 Esc 返回。
-- 「去过」样式（琥珀色）已预留，由 `visitedIds` 驱动，记录功能待做。
+- 记录足迹：在中国地图上点击一个市即标记为「去过」（再点一次取消），去过的市显示为灰蓝色，悬停时提示「已去过」；世界地图上的中国随之点亮。记录保存在浏览器 localStorage（键 `footprint.visited.v1`）。
 
 ## 技术栈
 
@@ -45,5 +45,6 @@ scripts/     数据生成脚本
 src/data     地图数据加载（cachedLoader / useAsync）与生成的数据文件
 src/geo      地理模型：类型、投影、国家 / 城市 key 与名称、buildWorld / buildChina
 src/map      地图组件：GeoMap（通用）、WorldMap、ChinaMap、SouthChinaSeaInset、Tooltip、useZoom
+src/state    足迹记录（useVisitedCities + localStorage 读写）
 src/styles   全局样式与颜色变量
 ```

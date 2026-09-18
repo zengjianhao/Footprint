@@ -144,7 +144,12 @@ export function GeoMap<U extends MapUnit>({
         </g>
         {children}
       </svg>
-      <Tooltip ref={tooltipRef} name={hovered?.name ?? null} subtitle={hovered?.subtitle} />
+      <Tooltip
+        ref={tooltipRef}
+        name={hovered?.name ?? null}
+        subtitle={hovered?.subtitle}
+        visited={hovered !== null && visitedIds.has(hovered.key)}
+      />
     </div>
   )
 }

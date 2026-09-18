@@ -18,7 +18,7 @@
   cursor: grabbing;
 }
 
-/* 未去过：安静的冷灰 */
+/* 未去过：安静的浅灰 */
 .unit {
   fill: var(--land);
   stroke: none;
@@ -30,7 +30,7 @@
   fill: var(--land-hover);
 }
 
-/* 已去过：点亮 */
+/* 已去过：灰蓝色点亮 */
 .unit.visited {
   fill: var(--visited);
 }
@@ -130,4 +130,14 @@
 .tooltip__subtitle {
   font-size: 11px;
   opacity: 0.75;
+}
+
+.tooltip__badge {
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--visited);
+  color: #ffffff;
+  font-size: 10px;
+  vertical-align: 1px;
 }
