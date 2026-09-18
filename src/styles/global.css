@@ -3,12 +3,15 @@
   --land: #d5dbe3;
   --land-hover: #b9c3cf;
   --border: #ffffff;
+  --border-major: #7d8899;
   --hover-outline: #1f2937;
   --visited: #f59e0b;
   --visited-hover: #d97706;
   --tooltip-bg: #111827;
   --tooltip-fg: #ffffff;
   --text: #4b5563;
+  --panel-bg: #ffffff;
+  --panel-border: #d1d5db;
 
   font-family:
     system-ui, -apple-system, 'Segoe UI', Roboto, 'PingFang SC', 'Hiragino Sans GB',
@@ -41,8 +44,42 @@ body {
   inset: 0;
 }
 
-.app--status {
+.map-status {
+  position: absolute;
+  inset: 0;
   display: grid;
   place-items: center;
   font-size: 14px;
+}
+
+/* 顶部导航：返回上一级地图 */
+.nav {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav__back {
+  appearance: none;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  background: var(--panel-bg);
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 13px;
+  color: #1f2937;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.nav__back:hover {
+  background: #f9fafb;
+}
+
+.nav__current {
+  font-size: 13px;
 }
