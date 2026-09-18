@@ -79,6 +79,15 @@
   pointer-events: none;
 }
 
+/* 附图：主图放大时淡出 */
+.inset {
+  transition: opacity 200ms ease;
+}
+
+.geo-map__svg--zoomed .inset {
+  opacity: 0;
+}
+
 .inset__frame {
   fill: var(--map-bg);
   stroke: var(--border-major);

@@ -1,5 +1,6 @@
 import { geoBounds, geoPath } from 'd3-geo'
-import type { Polygon } from 'geojson'
+import type { GeoPath } from 'd3-geo'
+import type { Feature, Geometry, Polygon } from 'geojson'
 import { feature, mesh } from 'topojson-client'
 import type { GeometryObject } from 'topojson-specification'
 import { indexByKey } from './indexByKey'
@@ -9,6 +10,7 @@ import type {
   ChinaTopology,
   CitiesCollection,
   City,
+  CityFeature,
   CityFeatureCollection,
   CityProperties,
   InsetModel,
@@ -32,8 +34,10 @@ const INSET_REGION: Polygon = {
     ],
   ],
 }
-/** 附图在 viewBox 中的尺寸与边距 */
-const INSET_SIZE = { width: 150, height: 190, margin: 12, padding: 6 }
+/** 附图在 viewBox 中的尺寸、到主图边缘的边距、内边距，以及与主图要素之间的最小间隔 */
+const INSET_SIZE = { width: 140, height: 176, margin: 12, padding: 6, gap: 8 }
+
+type Bounds = [[number, number], [number, number]]
 
 /** TopoJSON 几何对象上的市属性；NullObject 等分支没有属性时返回 undefined */
 function cityPropertiesOf(geometry: GeometryObject): CityProperties | undefined {
@@ -58,11 +62,11 @@ function isMinorBorder(a: GeometryObject, b: GeometryObject): boolean {
 export function buildChina(topology: ChinaTopology): ChinaModel {
   const citiesObject = topology.objects.cities
   const collection: CityFeatureCollection = feature(topology, citiesObject)
-  const mainland: CityFeatureCollection = {
-    type: 'FeatureCollection',
-    features: collection.features.filter((f) => f.properties.adcode !== SANSHA_ADCODE),
-  }
-  const { projection, path, width, height } = createChinaProjection(mainland)
+  const mainland: CityFeature[] = collection.features.filter(
+    (f) => f.properties.adcode !== SANSHA_ADCODE,
+  )
+  const fitted = createChinaProjection({ type: 'FeatureCollection', features: mainland })
+  const { projection, path, width } = fitted
 
   const units: City[] = collection.features.map((f) => {
     const p = f.properties
@@ -85,6 +89,8 @@ export function buildChina(topology: ChinaTopology): ChinaModel {
   // 十段线在数据源里是 MultiPolygon：每一段都是细长的多边形，按填充绘制
   const dashLine = feature(topology, topology.objects.dashLine)
 
+  const layout = layoutInset(path, mainland, dashLine.features, width, fitted.height)
+
   return {
     units,
     byKey: indexByKey(units),
@@ -93,22 +99,65 @@ export function buildChina(topology: ChinaTopology): ChinaModel {
       { d: path(major) ?? '', kind: 'major' },
     ],
     decorations: [{ d: path(dashLine) ?? '', kind: 'dash-line' }],
-    inset: buildInset(topology, collection, width, height),
+    inset: buildInset(topology, collection, layout.x, layout.y),
     width,
-    height,
+    height: layout.height,
     projection,
     path,
   }
+}
+
+/**
+ * 决定附图位置与主图高度：附图贴主图右下角，但必须整体落在台湾、沿海诸市
+ * 以及最北几段十段线之下的海面上，不足的高度向南扩展主图（与出版地图的版式一致）。
+ */
+function layoutInset(
+  path: GeoPath,
+  mainland: CityFeature[],
+  dashFeatures: Feature<Geometry>[],
+  mapWidth: number,
+  fittedHeight: number,
+): { x: number; y: number; height: number } {
+  const { width, height, margin, gap } = INSET_SIZE
+  const x = mapWidth - width - margin
+  const reachesInsetColumn = (bounds: Bounds) => bounds[1][0] >= x - gap
+
+  let top = 0
+  for (const f of mainland) {
+    const bounds = path.bounds(f)
+    if (reachesInsetColumn(bounds)) top = Math.max(top, bounds[1][1] + gap)
+  }
+
+  // 十段线：上沿高于附图顶的段要完整留在主图上，不能被附图切成半截
+  const dashBounds = dashFeatures
+    .flatMap((f) => polygonsOf(f.geometry))
+    .map((polygon) => path.bounds(polygon))
+    .filter(reachesInsetColumn)
+    .sort((a, b) => a[0][1] - b[0][1])
+  for (const bounds of dashBounds) {
+    if (bounds[0][1] < top) top = Math.max(top, bounds[1][1] + gap)
+  }
+
+  const mapHeight = Math.max(fittedHeight, Math.ceil(top + height + margin))
+  return { x, y: mapHeight - height - margin, height: mapHeight }
+}
+
+function polygonsOf(geometry: Geometry): Polygon[] {
+  if (geometry.type === 'Polygon') return [geometry]
+  if (geometry.type === 'MultiPolygon') {
+    return geometry.coordinates.map((coordinates) => ({ type: 'Polygon', coordinates }))
+  }
+  return []
 }
 
 /** 南海诸岛附图：用同一投影单独拟合到南海范围，只渲染与该范围相交的市 */
 function buildInset(
   topology: ChinaTopology,
   collection: CityFeatureCollection,
-  mapWidth: number,
-  mapHeight: number,
+  x: number,
+  y: number,
 ): InsetModel {
-  const { width, height, margin, padding } = INSET_SIZE
+  const { width, height, padding } = INSET_SIZE
   const projection = chinaProjection().fitExtent(
     [
       [padding, padding],
@@ -136,8 +185,8 @@ function buildInset(
   }
 
   return {
-    x: mapWidth - width - margin,
-    y: mapHeight - height - margin,
+    x,
+    y,
     width,
     height,
     landD: path({ type: 'FeatureCollection', features: inRegion }) ?? '',

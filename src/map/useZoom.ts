@@ -50,6 +50,8 @@ export function useZoom({
       ])
       .on('zoom', (event: ZoomEvent) => {
         group.setAttribute('transform', event.transform.toString())
+        // 放大后给 svg 打标记，静态覆盖层（如附图）据此淡出，不挡住被放大的内容
+        svg.classList.toggle('geo-map__svg--zoomed', event.transform.k > 1.01)
         onZoomRef.current?.(event)
       })
 
