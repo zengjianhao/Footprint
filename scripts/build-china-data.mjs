@@ -8,56 +8,20 @@
  * - 各省的 `{adcode}_full.json` 给出市级单元（含省直辖县级行政区）
  * - 直辖市、港澳台没有市级层（台湾无子级数据），各自作为一个单元
  * - 十段线（100000_JD）单独保留为要素（数据源里是十段细长多边形）
- * - 数据源的多边形外环为逆时针（RFC 7946），d3-geo 的球面多边形要求外环顺时针，
- *   否则会被当成"除该区域外的整个地球"，因此写入前按 d3 约定重绕
+ * - 多边形按 d3 约定重绕外环
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { geoArea } from 'd3-geo'
+import { writeFileSync } from 'node:fs'
 import { topology } from 'topojson-server'
-import { quantize } from 'topojson-client'
-import { presimplify, simplify, sphericalTriangleArea } from 'topojson-simplify'
+import { fetchJsonCached, rewindGeometry, simplifyTopology } from './lib/geo.mjs'
 
 const BASE = 'https://geo.datav.aliyun.com/areas_v3/bound'
 const OUT = new URL('../src/data/china/china-cities.json', import.meta.url)
+const CACHE_DIR = new URL('../node_modules/.cache/china-data/', import.meta.url)
 /** 没有市级层、按单个单元处理的省级行政区 */
 const SINGLE_UNIT = new Set([110000, 120000, 310000, 500000, 710000, 810000, 820000])
 /** 简化阈值（球面三角形面积，单位 sr）；越大越粗糙。1.5e-8 ≈ 0.6 km²，输出约 950 KB（gzip 320 KB） */
 const MIN_WEIGHT = Number(process.env.MIN_WEIGHT ?? 1.5e-8)
 const QUANTIZATION = 1e5
-/** 原始下载缓存，便于反复调整简化参数 */
-const CACHE_DIR = new URL('../node_modules/.cache/china-data/', import.meta.url)
-
-async function fetchJson(url) {
-  mkdirSync(CACHE_DIR, { recursive: true })
-  const cached = new URL(url.slice(url.lastIndexOf('/') + 1), CACHE_DIR)
-  if (existsSync(cached)) return JSON.parse(readFileSync(cached, 'utf8'))
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}: ${url}`)
-  const text = await res.text()
-  writeFileSync(cached, text)
-  return JSON.parse(text)
-}
-
-const HEMISPHERE = 2 * Math.PI
-
-/** d3 约定：外环顺时针（独立成面时面积 < 2π），内环逆时针（面积 > 2π）；不符合就反转 */
-function rewindRing(ring, isExterior) {
-  const area = geoArea({ type: 'Polygon', coordinates: [ring] })
-  const wrong = isExterior ? area > HEMISPHERE : area < HEMISPHERE
-  return wrong ? ring.slice().reverse() : ring
-}
-
-function rewindPolygon(rings) {
-  return rings.map((ring, i) => rewindRing(ring, i === 0))
-}
-
-function rewindGeometry(geometry) {
-  if (geometry.type === 'Polygon') return { ...geometry, coordinates: rewindPolygon(geometry.coordinates) }
-  if (geometry.type === 'MultiPolygon') {
-    return { ...geometry, coordinates: geometry.coordinates.map(rewindPolygon) }
-  }
-  return geometry
-}
 
 function toCity(f, province) {
   const p = f.properties
@@ -74,7 +38,7 @@ function toCity(f, province) {
   }
 }
 
-const country = await fetchJson(`${BASE}/100000_full.json`)
+const country = await fetchJsonCached(`${BASE}/100000_full.json`, CACHE_DIR)
 const provinces = country.features.filter((f) => f.properties.level === 'province')
 const dashLine = country.features.find((f) => f.properties.adcode === '100000_JD')
 if (provinces.length !== 34 || !dashLine) throw new Error('unexpected 100000_full.json structure')
@@ -87,7 +51,7 @@ for (const province of provinces) {
     console.log(`${name}: 1 (single unit)`)
     continue
   }
-  const full = await fetchJson(`${BASE}/${adcode}_full.json`)
+  const full = await fetchJsonCached(`${BASE}/${adcode}_full.json`, CACHE_DIR)
   for (const f of full.features) cities.push(toCity(f, province))
   console.log(`${name}: ${full.features.length}`)
 }
@@ -109,8 +73,7 @@ let topo = topology(
   },
   QUANTIZATION,
 )
-// presimplify 会去掉量化并展开为绝对坐标，简化后必须重新量化，否则文件会膨胀数倍
-topo = quantize(simplify(presimplify(topo, sphericalTriangleArea), MIN_WEIGHT), QUANTIZATION)
+topo = simplifyTopology(topo, MIN_WEIGHT, QUANTIZATION)
 topo.source = 'DataV.GeoAtlas (https://geo.datav.aliyun.com/areas_v3/bound)'
 topo.generatedAt = new Date().toISOString().slice(0, 10)
 

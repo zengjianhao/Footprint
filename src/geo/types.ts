@@ -2,9 +2,9 @@ import type { GeoPath, GeoProjection } from 'd3-geo'
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import type { GeometryCollection, Topology } from 'topojson-specification'
 
-/** 地图上可悬停、可点击的最小单元：世界地图上是国家，中国地图上是市 */
+/** 地图上可悬停、可点击的最小单元：世界地图上是国家，精细地图上是市 / 都道府县 */
 export interface MapUnit {
-  /** 稳定唯一键：国家用 ISO 3166-1 数字编码，市用行政区划代码 */
+  /** 稳定唯一键：国家用 ISO 3166-1 数字编码，市用行政区划代码，都道府县用 ISO 3166-2 代码 */
   key: string
   /** 主显示名 */
   name: string
@@ -38,6 +38,26 @@ export interface MapModel<U extends MapUnit = MapUnit> {
   /** 经纬度 → viewBox 坐标；后续城市点位复用 */
   projection: GeoProjection
   path: GeoPath
+}
+
+/** 附图（南海诸岛、南西诸岛）：位于主图右下角；路径坐标相对附图左上角 */
+export interface InsetModel {
+  x: number
+  y: number
+  width: number
+  height: number
+  label: string
+  landD: string
+  bordersD: string
+  decorationD?: string
+}
+
+/** 有精细地图的国家 */
+export type DetailCountryId = 'china' | 'japan'
+
+/** 精细地图模型：单元 + 可选附图 */
+export interface DetailModel<U extends MapUnit = MapUnit> extends MapModel<U> {
+  inset?: InsetModel
 }
 
 // ---------- 世界地图（world-atlas） ----------
@@ -82,17 +102,30 @@ export interface City extends MapUnit {
   feature: CityFeature
 }
 
-/** 南海诸岛附图：位于主图右下角；路径坐标相对附图左上角 */
-export interface InsetModel {
-  x: number
-  y: number
-  width: number
-  height: number
-  landD: string
-  bordersD: string
-  dashLineD: string
+export type ChinaModel = DetailModel<City>
+
+// ---------- 日本地图（由 scripts/build-japan-data.mjs 生成） ----------
+
+export type PrefectureProperties = {
+  /** ISO 3166-2 代码，如 JP-13 */
+  code: string
+  /** 中文名 */
+  name: string
+  nameJa: string
+  nameEn: string
+  /** 所属地方（八地方区分） */
+  region: string
+}
+export type PrefecturesCollection = GeometryCollection<PrefectureProperties>
+export type JapanTopology = Topology<{ prefectures: PrefecturesCollection }>
+export type PrefectureFeature = Feature<Geometry, PrefectureProperties>
+export type PrefectureFeatureCollection = FeatureCollection<Geometry, PrefectureProperties>
+
+export interface Prefecture extends MapUnit {
+  code: string
+  nameJa: string
+  region: string
+  feature: PrefectureFeature
 }
 
-export interface ChinaModel extends MapModel<City> {
-  inset: InsetModel
-}
+export type JapanModel = DetailModel<Prefecture>

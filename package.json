@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "data:china": "node scripts/build-china-data.mjs"
+    "data:china": "node scripts/build-china-data.mjs",
+    "data:japan": "node scripts/build-japan-data.mjs"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",

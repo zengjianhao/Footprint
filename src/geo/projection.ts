@@ -45,3 +45,12 @@ export function chinaProjection(): GeoProjection {
 export function createChinaProjection(object: GeoPermissibleObjects): FittedProjection {
   return fitProjection(chinaProjection(), object, MAP_WIDTH)
 }
+
+/** 日本地图：同类圆锥投影，标准纬线 33°N / 43°N，中央经线 138°E */
+export function japanProjection(): GeoProjection {
+  return geoConicEqualArea().parallels([33, 43]).rotate([-138, 0])
+}
+
+export function createJapanProjection(object: GeoPermissibleObjects): FittedProjection {
+  return fitProjection(japanProjection(), object, MAP_WIDTH)
+}
