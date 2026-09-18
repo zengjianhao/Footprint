@@ -14,7 +14,7 @@ npm run lint     # oxlint
 ## 技术栈
 
 - Vite + React 19 + TypeScript
-- d3-geo（Equal Earth 投影）、d3-zoom / d3-selection（缩放拖拽）、topojson-client
+- d3-geo（Natural Earth 投影，中央经线 150°E、太平洋居中）、d3-zoom / d3-selection（缩放拖拽）、topojson-client
 - 地图数据：world-atlas `countries-50m.json`（作为独立静态资源按需加载）
 - 中文国名：i18n-iso-countries，仅注册 zh 语言包
 
