@@ -30,7 +30,7 @@
   fill: var(--land-hover);
 }
 
-/* 已去过：灰蓝色点亮 */
+/* 已去过：明亮的蓝色点亮 */
 .unit.visited {
   fill: var(--visited);
 }
@@ -136,7 +136,7 @@
   margin-left: 6px;
   padding: 1px 5px;
   border-radius: 4px;
-  background: var(--visited);
+  background: var(--visited-hover);
   color: #ffffff;
   font-size: 10px;
   vertical-align: 1px;
