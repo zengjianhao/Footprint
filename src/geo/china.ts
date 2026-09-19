@@ -110,7 +110,7 @@ export function buildChina(topology: ChinaTopology): ChinaModel {
         region: INSET_REGION,
         size: INSET_SIZE,
         label: '南海诸岛',
-        land: insetLand,
+        land: insetLand.map((f) => ({ key: f.properties.adcode, feature: f })),
         borders: mesh(topology, insetSubset, isMajorBorder),
         decoration: dashLine,
       },

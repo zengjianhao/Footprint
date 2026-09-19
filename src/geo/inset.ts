@@ -3,6 +3,12 @@ import type { GeoPath, GeoPermissibleObjects, GeoProjection } from 'd3-geo'
 import type { Feature, Geometry, MultiLineString, Polygon } from 'geojson'
 import type { InsetModel } from './types'
 
+/** 要在附图里绘制的一个单元：key 与主图一致 */
+export interface InsetLand {
+  key: string
+  feature: Feature
+}
+
 export interface LonLatBounds {
   west: number
   south: number
@@ -101,8 +107,8 @@ export interface InsetContentSpec {
   region: LonLatBounds
   size: InsetSize
   label: string
-  /** 要绘制的要素（已按范围筛过），超出附图的部分由裁剪去掉 */
-  land: readonly Feature[]
+  /** 要绘制的单元（已按范围筛过），超出附图的部分由裁剪去掉 */
+  land: readonly InsetLand[]
   borders: MultiLineString | null
   decoration?: GeoPermissibleObjects
 }
@@ -124,7 +130,7 @@ export function buildInsetContent(spec: InsetContentSpec, layout: InsetLayout): 
     width,
     height,
     label: spec.label,
-    landD: path({ type: 'FeatureCollection', features: [...spec.land] }) ?? '',
+    units: spec.land.map(({ key, feature }) => ({ key, d: path(feature) ?? '' })),
     bordersD: spec.borders ? (path(spec.borders) ?? '') : '',
     decorationD: spec.decoration ? (path(spec.decoration) ?? '') : undefined,
   }

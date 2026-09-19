@@ -38,27 +38,33 @@ export interface MapModel<U extends MapUnit = MapUnit> {
   /** 经纬度 → viewBox 坐标；后续城市点位复用 */
   projection: GeoProjection
   path: GeoPath
+  /** 右下角附图（精细地图才有） */
+  inset?: InsetModel
 }
 
-/** 附图（南海诸岛、南西诸岛）：位于主图右下角；路径坐标相对附图左上角 */
+/** 附图里的一个单元：key 与主图单元相同，路径用附图自己的投影 */
+export interface InsetUnit {
+  key: string
+  d: string
+}
+
+/**
+ * 附图（南海诸岛、南西诸岛）：位于主图右下角；路径坐标相对附图左上角。
+ * 附图里的单元同样可以悬停与点击，只在附图中出现的单元（如冲绳、三沙）就靠这里标记。
+ */
 export interface InsetModel {
   x: number
   y: number
   width: number
   height: number
   label: string
-  landD: string
+  units: InsetUnit[]
   bordersD: string
   decorationD?: string
 }
 
 /** 有精细地图的国家 */
 export type DetailCountryId = 'china' | 'japan'
-
-/** 精细地图模型：单元 + 可选附图 */
-export interface DetailModel<U extends MapUnit = MapUnit> extends MapModel<U> {
-  inset?: InsetModel
-}
 
 // ---------- 世界地图（world-atlas） ----------
 
@@ -102,7 +108,7 @@ export interface City extends MapUnit {
   feature: CityFeature
 }
 
-export type ChinaModel = DetailModel<City>
+export type ChinaModel = MapModel<City>
 
 // ---------- 日本地图（由 scripts/build-japan-data.mjs 生成） ----------
 
@@ -128,4 +134,4 @@ export interface Prefecture extends MapUnit {
   feature: PrefectureFeature
 }
 
-export type JapanModel = DetailModel<Prefecture>
+export type JapanModel = MapModel<Prefecture>

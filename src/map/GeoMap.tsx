@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import type { MapModel, MapUnit } from '../geo/types'
+import { MapInset } from './MapInset'
 import { Tooltip } from './Tooltip'
 import { UnitLayer } from './UnitLayer'
 import { useZoom } from './useZoom'
@@ -15,7 +16,7 @@ interface GeoMapProps<U extends MapUnit> {
   maxScale?: number
   /** 无障碍名称 */
   label: string
-  /** 不随地图缩放的静态覆盖层（viewBox 坐标），例如附图 */
+  /** 其他不随地图缩放的静态覆盖层（viewBox 坐标） */
   children?: ReactNode
 }
 
@@ -28,8 +29,9 @@ function unitKeyOf(target: EventTarget | Element | null): string | null {
 }
 
 /**
- * 通用的可缩放地图：填充层 + 边界层 + 悬停描边 + 跟随光标的名称标签。
- * 世界地图与中国地图共用；差异全部由 model 描述。
+ * 通用的可缩放地图：填充层 + 边界层 + 悬停描边 + 跟随光标的名称标签 + 可选附图。
+ * 世界地图与各国精细地图共用；差异全部由 model 描述。
+ * 附图里的单元与主图单元同 key，悬停 / 点击通过同一套事件委托处理。
  */
 export function GeoMap<U extends MapUnit>({
   model,
@@ -142,6 +144,9 @@ export function GeoMap<U extends MapUnit>({
             <path className="hover-outline" d={hovered.d} vectorEffect="non-scaling-stroke" />
           )}
         </g>
+        {model.inset && (
+          <MapInset inset={model.inset} visitedIds={visitedIds} hoveredKey={hoveredKey} />
+        )}
         {children}
       </svg>
       <Tooltip

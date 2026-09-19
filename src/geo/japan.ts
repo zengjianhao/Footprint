@@ -18,9 +18,10 @@ import type {
  * 冲绳与鹿儿岛的奄美群岛交给南西诸岛附图，东京的小笠原群岛等远岛不显示。
  */
 const MAIN_REGION: LonLatBounds = { west: 128.6, south: 30.2, east: 149, north: 45.7 }
-/** 南西诸岛附图覆盖的经纬度范围：八重山、冲绳本岛到奄美群岛 */
-const INSET_REGION: LonLatBounds = { west: 122.5, south: 23.7, east: 131.8, north: 29.6 }
-const INSET_SIZE: InsetSize = { width: 200, height: 140, margin: 12, padding: 6, gap: 8 }
+/** 南西诸岛附图覆盖的经纬度范围：八重山、宫古、冲绳本岛到奄美群岛（大东诸岛太小，不纳入） */
+const INSET_REGION: LonLatBounds = { west: 123, south: 24, east: 130.6, north: 28.7 }
+/** 岛屿细小，附图做得大一些以便点中 */
+const INSET_SIZE: InsetSize = { width: 260, height: 175, margin: 12, padding: 6, gap: 8 }
 
 function prefecturePropertiesOf(geometry: GeometryObject): PrefectureProperties | undefined {
   return geometry.properties as PrefectureProperties | undefined
@@ -74,7 +75,7 @@ export function buildJapan(topology: JapanTopology): JapanModel {
         region: INSET_REGION,
         size: INSET_SIZE,
         label: '南西诸岛',
-        land: insetLand,
+        land: insetLand.map((f) => ({ key: f.properties.code, feature: f })),
         borders: mesh(topology, insetSubset),
       },
       layout,

@@ -79,23 +79,30 @@
   pointer-events: none;
 }
 
-/* 附图：主图放大时淡出 */
+/* 附图：主图放大时淡出，同时不再响应指针 */
 .inset {
   transition: opacity 200ms ease;
 }
 
 .geo-map__svg--zoomed .inset {
   opacity: 0;
+  pointer-events: none;
 }
 
+/* 附图底框接住指针，避免点到被附图盖住的主图内容 */
 .inset__frame {
   fill: var(--map-bg);
   stroke: var(--border-major);
   stroke-width: 1;
 }
 
-.inset__land {
-  fill: var(--land);
+/* 透明粗描边：扩大附图里小岛的命中范围，位于填充层之下 */
+.inset__hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 6;
+  stroke-linejoin: round;
+  cursor: pointer;
 }
 
 .inset__borders {
@@ -103,11 +110,13 @@
   stroke: var(--border-major);
   stroke-width: 0.8;
   stroke-linejoin: round;
+  pointer-events: none;
 }
 
 .inset__label {
   font-size: 10px;
   fill: var(--text);
+  pointer-events: none;
 }
 
 .tooltip {

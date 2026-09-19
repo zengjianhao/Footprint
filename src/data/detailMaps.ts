@@ -1,5 +1,5 @@
 import { chinaVisitedCountryKeys } from '../geo/china'
-import type { DetailCountryId, DetailModel } from '../geo/types'
+import type { DetailCountryId, MapModel } from '../geo/types'
 import { loadChina } from './chinaAtlas'
 import { loadJapan } from './japanAtlas'
 
@@ -14,7 +14,7 @@ export interface DetailMapSpec {
   entryKeys: ReadonlySet<string>
   /** 最大缩放倍率：单元越大，需要的倍率越小 */
   maxScale: number
-  load: () => Promise<DetailModel>
+  load: () => Promise<MapModel>
   /** 由去过的单元推导世界地图上应点亮的要素 key */
   visitedCountryKeys: (units: ReadonlySet<string>) => Iterable<string>
 }
