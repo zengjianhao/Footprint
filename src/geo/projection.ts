@@ -1,4 +1,4 @@
-import { geoConicEqualArea, geoNaturalEarth1, geoPath } from 'd3-geo'
+import { geoAlbersUsa, geoConicEqualArea, geoNaturalEarth1, geoPath } from 'd3-geo'
 import type { GeoPath, GeoPermissibleObjects, GeoProjection } from 'd3-geo'
 
 /** SVG viewBox 的逻辑宽度；高度由投影拟合结果决定 */
@@ -53,4 +53,13 @@ export function japanProjection(): GeoProjection {
 
 export function createJapanProjection(object: GeoPermissibleObjects): FittedProjection {
   return fitProjection(japanProjection(), object, MAP_WIDTH)
+}
+
+/**
+ * 美国地图：Albers USA 复合投影。本土用 Albers 等面积圆锥投影，
+ * 阿拉斯加（缩至 35%）与夏威夷各自投影后放在左下角，是美国地图的标准版式。
+ * 投影范围之外的海外领地会得到 null。
+ */
+export function createUsProjection(object: GeoPermissibleObjects): FittedProjection {
+  return fitProjection(geoAlbersUsa(), object, MAP_WIDTH)
 }

@@ -64,7 +64,7 @@ export interface InsetModel {
 }
 
 /** 有精细地图的国家 */
-export type DetailCountryId = 'china' | 'japan'
+export type DetailCountryId = 'china' | 'japan' | 'us'
 
 // ---------- 世界地图（world-atlas） ----------
 
@@ -135,3 +135,33 @@ export interface Prefecture extends MapUnit {
 }
 
 export type JapanModel = MapModel<Prefecture>
+
+// ---------- 美国地图（由 scripts/build-us-data.mjs 生成） ----------
+
+export type StateProperties = {
+  /** ISO 3166-2 代码，如 US-CA */
+  code: string
+  /** FIPS 州代码，如 06 */
+  fips: string
+  /** USPS 缩写，如 CA */
+  abbr: string
+  /** 中文名 */
+  name: string
+  nameEn: string
+  /** 人口普查局四大区域 */
+  region: string
+}
+export type StatesCollection = GeometryCollection<StateProperties>
+export type UsTopology = Topology<{ states: StatesCollection }>
+export type StateFeature = Feature<Geometry, StateProperties>
+export type StateFeatureCollection = FeatureCollection<Geometry, StateProperties>
+
+export interface State extends MapUnit {
+  code: string
+  abbr: string
+  nameEn: string
+  region: string
+  feature: StateFeature
+}
+
+export type UsModel = MapModel<State>

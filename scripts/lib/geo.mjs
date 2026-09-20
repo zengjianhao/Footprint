@@ -1,12 +1,19 @@
+import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { geoArea } from 'd3-geo'
 import { feature, quantize } from 'topojson-client'
 import { filter, presimplify, simplify, sphericalTriangleArea } from 'topojson-simplify'
 
-/** 下载 JSON 并缓存到 cacheDir（按 URL 最后一段命名），便于反复调整简化参数 */
+/**
+ * 下载 JSON 并缓存到 cacheDir，便于反复调整简化参数。
+ * 缓存文件名带完整 URL 的哈希：换版本号或换路径都会重新下载，不会静默复用旧数据。
+ * 缓存目录在 node_modules/.cache 下，不进仓库。
+ */
 export async function fetchJsonCached(url, cacheDir) {
   mkdirSync(cacheDir, { recursive: true })
-  const cached = new URL(url.slice(url.lastIndexOf('/') + 1), cacheDir)
+  const basename = url.slice(url.lastIndexOf('/') + 1)
+  const hash = createHash('sha1').update(url).digest('hex').slice(0, 8)
+  const cached = new URL(`${hash}-${basename}`, cacheDir)
   if (existsSync(cached)) return JSON.parse(readFileSync(cached, 'utf8'))
   const res = await fetch(url)
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}: ${url}`)

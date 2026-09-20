@@ -2,6 +2,7 @@ import { chinaVisitedCountryKeys } from '../geo/china'
 import type { DetailCountryId, MapModel } from '../geo/types'
 import { loadChina } from './chinaAtlas'
 import { loadJapan } from './japanAtlas'
+import { loadUs } from './usAtlas'
 
 /** 一个有精细地图的国家的全部配置 */
 export interface DetailMapSpec {
@@ -40,7 +41,17 @@ const JAPAN: DetailMapSpec = {
   visitedCountryKeys: (units) => (units.size > 0 ? ['392'] : []),
 }
 
-export const DETAIL_MAPS: readonly DetailMapSpec[] = [CHINA, JAPAN]
+const US: DetailMapSpec = {
+  id: 'us',
+  label: '美国',
+  unitNoun: '个州',
+  entryKeys: new Set(['840']),
+  maxScale: 24,
+  load: loadUs,
+  visitedCountryKeys: (units) => (units.size > 0 ? ['840'] : []),
+}
+
+export const DETAIL_MAPS: readonly DetailMapSpec[] = [CHINA, JAPAN, US]
 
 export function detailMapForCountry(countryKey: string): DetailMapSpec | undefined {
   return DETAIL_MAPS.find((spec) => spec.entryKeys.has(countryKey))
