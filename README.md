@@ -60,6 +60,14 @@ src/state    足迹记录（useVisited + localStorage 读写）
 src/styles   全局样式与颜色变量
 ```
 
+## 部署
+
+推送到 `main` 后由 GitHub Actions 自动构建并发布到 GitHub Pages：
+<https://zengjianhao.github.io/Footprint/>。
+
+站点在仓库名子路径下，因此构建时由 CI 传入 `BASE_PATH`（见 `.github/workflows/deploy.yml`），
+`vite.config.ts` 据此设置 `base`；本地开发与 `npm run preview` 仍用根路径，无需额外配置。
+
 ## 许可
 
 代码以 [MIT](LICENSE) 许可发布。`src/data/` 下的地图数据来自第三方，各自遵循其原始许可，
