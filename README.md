@@ -59,3 +59,9 @@ src/map      地图组件：GeoMap（通用）、WorldMap、DetailMap、MapInset
 src/state    足迹记录（useVisited + localStorage 读写）
 src/styles   全局样式与颜色变量
 ```
+
+## 许可
+
+代码以 [MIT](LICENSE) 许可发布。`src/data/` 下的地图数据来自第三方，各自遵循其原始许可，
+使用或再分发时请保留上面「数据」一节中的出处说明；其中日本数据（地球地図日本，国土地理院）
+非营利使用需注明出处，营利使用还需向著作权人报备。
