@@ -8,6 +8,14 @@ export const MIN_SCALE = 1
 /** 世界地图的默认上限：梵蒂冈在 viewBox 中约 0.02 单位宽，400× 下约 8px，足够悬停 */
 export const DEFAULT_MAX_SCALE = 400
 
+/**
+ * 按下到抬起之间允许的位移（px）。d3-zoom 默认是 0：只要动了 1px 就判定为拖拽，
+ * 并在 window 上以捕获方式吞掉随后的 click，标记会静默失败。
+ * 点击是本应用唯一的动词，给 6px 容差，覆盖手抖和触控板按压时的微小滑动；
+ * 真正的拖拽远大于 6px，仍然不会被误判成标记。
+ */
+const CLICK_DISTANCE = 6
+
 export type ZoomEvent = D3ZoomEvent<SVGSVGElement, unknown>
 
 interface UseZoomOptions {
@@ -44,6 +52,7 @@ export function useZoom({
 
     const behavior = zoom<SVGSVGElement, unknown>()
       .scaleExtent([MIN_SCALE, maxScale])
+      .clickDistance(CLICK_DISTANCE)
       .translateExtent([
         [0, 0],
         [width, height],

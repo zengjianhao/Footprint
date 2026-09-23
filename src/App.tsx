@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { deriveVisitedCountryKeys, detailMapForCountry } from './data/detailMaps'
+import { useCallback, useEffect, useState } from 'react'
+import { DETAIL_MAPS } from './data/detailMaps'
 import type { DetailMapSpec } from './data/detailMaps'
 import type { Country, MapUnit } from './geo/types'
 import { DetailMap } from './map/DetailMap'
@@ -12,24 +12,23 @@ const EMPTY: ReadonlySet<string> = new Set()
 
 function App() {
   const [view, setView] = useState<View>({ kind: 'world' })
-  const { visited, toggle } = useVisited()
-  // 在任何国家去过任何一个单元，世界地图上对应的要素就点亮
-  const visitedCountries = useMemo(() => deriveVisitedCountryKeys(visited), [visited])
+  const { visited, toggleCountry, toggleUnit } = useVisited()
 
   const goWorld = useCallback(() => setView({ kind: 'world' }), [])
+  const goDetail = useCallback((spec: DetailMapSpec) => setView({ kind: 'detail', spec }), [])
 
-  const handleCountryClick = useCallback((country: Country) => {
-    const spec = detailMapForCountry(country.key)
-    if (spec) setView({ kind: 'detail', spec })
-  }, [])
+  // 世界地图上点任何国家都是标记去过，不再是进入精细地图
+  const handleCountryClick = useCallback(
+    (country: Country) => toggleCountry(country.key),
+    [toggleCountry],
+  )
 
   const detail = view.kind === 'detail' ? view.spec : null
-  const detailId = detail?.id
   const handleUnitClick = useCallback(
     (unit: MapUnit) => {
-      if (detailId) toggle(detailId, unit.key)
+      if (detail) toggleUnit(detail, unit.key)
     },
-    [detailId, toggle],
+    [detail, toggleUnit],
   )
 
   // Esc 返回世界地图
@@ -42,7 +41,7 @@ function App() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [detail, goWorld])
 
-  const visitedUnits = detail ? (visited[detail.id] ?? EMPTY) : EMPTY
+  const visitedUnits = detail ? (visited.units[detail.id] ?? EMPTY) : EMPTY
 
   return (
     <div className="app">
@@ -54,11 +53,12 @@ function App() {
           onUnitClick={handleUnitClick}
         />
       ) : (
-        <WorldMap visitedIds={visitedCountries} onCountryClick={handleCountryClick} />
+        <WorldMap visitedIds={visited.countries} onCountryClick={handleCountryClick} />
       )}
-      {detail && (
+
+      {detail ? (
         <nav className="nav" aria-label="地图层级">
-          <button type="button" className="nav__back" onClick={goWorld}>
+          <button type="button" className="nav__button" onClick={goWorld}>
             ‹ 世界地图
           </button>
           <span className="nav__current">{detail.label}</span>
@@ -67,6 +67,21 @@ function App() {
               已去过 {visitedUnits.size} {detail.unitNoun}
             </span>
           )}
+        </nav>
+      ) : (
+        // 世界地图上点击是标记，进入精细地图改由这里，触屏也能用
+        <nav className="nav" aria-label="精细地图">
+          <span className="nav__current">可标得更细</span>
+          {DETAIL_MAPS.map((spec) => (
+            <button
+              key={spec.id}
+              type="button"
+              className="nav__button"
+              onClick={() => goDetail(spec)}
+            >
+              {spec.label} ›
+            </button>
+          ))}
         </nav>
       )}
     </div>

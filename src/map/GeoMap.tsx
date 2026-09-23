@@ -14,10 +14,17 @@ interface GeoMapProps<U extends MapUnit> {
   onUnitClick?: (unit: U) => void
   /** 最大缩放倍率；默认取世界地图所需的 400× */
   maxScale?: number
+  /** 悬停提示的最后一行；默认告诉用户再点一次会发生什么 */
+  hintFor?: (unit: U, visited: boolean) => string | undefined
   /** 无障碍名称 */
   label: string
   /** 其他不随地图缩放的静态覆盖层（viewBox 坐标） */
   children?: ReactNode
+}
+
+/** 默认提示：点击即切换「去过」 */
+function defaultHint(_unit: MapUnit, visited: boolean): string {
+  return visited ? '再点一次取消' : '点击标为去过'
 }
 
 const TOOLTIP_OFFSET = 14
@@ -38,6 +45,7 @@ export function GeoMap<U extends MapUnit>({
   visitedIds,
   onUnitClick,
   maxScale,
+  hintFor = defaultHint,
   label,
   children,
 }: GeoMapProps<U>) {
@@ -47,6 +55,7 @@ export function GeoMap<U extends MapUnit>({
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null)
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
   const hovered = hoveredKey === null ? null : (model.byKey.get(hoveredKey) ?? null)
+  const hoveredVisited = hovered !== null && visitedIds.has(hovered.key)
 
   const moveTooltip = useCallback((clientX: number, clientY: number) => {
     const el = tooltipRef.current
@@ -63,11 +72,12 @@ export function GeoMap<U extends MapUnit>({
     el.style.transform = `translate(${x}px, ${y}px)`
   }, [])
 
-  // tooltip 刚出现或换了单元时尺寸会变（隐藏时量不到宽度）：DOM 更新后、绘制前按最新尺寸重新定位
+  // tooltip 刚出现、换了单元或文案变长时尺寸会变（隐藏时量不到宽度）：
+  // DOM 更新后、绘制前按最新尺寸重新定位
   useLayoutEffect(() => {
     const pointer = lastPointerRef.current
     if (hovered && pointer) moveTooltip(pointer.x, pointer.y)
-  }, [hovered, moveTooltip])
+  }, [hovered, hoveredVisited, moveTooltip])
 
   const handlePointerMove = useCallback(
     (event: ReactPointerEvent<SVGSVGElement>) => {
@@ -153,7 +163,8 @@ export function GeoMap<U extends MapUnit>({
         ref={tooltipRef}
         name={hovered?.name ?? null}
         subtitle={hovered?.subtitle}
-        visited={hovered !== null && visitedIds.has(hovered.key)}
+        hint={hovered ? hintFor(hovered, hoveredVisited) : undefined}
+        visited={hoveredVisited}
       />
     </div>
   )

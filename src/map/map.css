@@ -141,6 +141,12 @@
   opacity: 0.75;
 }
 
+.tooltip__hint {
+  margin-top: 2px;
+  font-size: 11px;
+  opacity: 0.55;
+}
+
 .tooltip__badge {
   margin-left: 6px;
   padding: 1px 5px;
