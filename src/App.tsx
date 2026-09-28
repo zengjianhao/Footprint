@@ -70,8 +70,8 @@ function App() {
         </nav>
       ) : (
         // 世界地图上点击是标记，进入精细地图改由这里，触屏也能用
-        <nav className="nav" aria-label="精细地图">
-          <span className="nav__current">可标得更细</span>
+        <nav className="nav nav--stacked" aria-label="精细地图">
+          <span className="nav__current">精细地图</span>
           {DETAIL_MAPS.map((spec) => (
             <button
               key={spec.id}
