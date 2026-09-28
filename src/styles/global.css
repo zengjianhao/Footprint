@@ -59,8 +59,11 @@ body {
   left: 16px;
   z-index: 5;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
+  /* 窄屏上换行，不伸到右上角的 .map-actions 下面；160px 按其中最宽的「保存失败，重试」留出 */
+  max-width: calc(100% - 160px);
 }
 
 /* 世界地图的精细地图入口：标题在上，各国入口在下方竖排 */
@@ -87,6 +90,11 @@ body {
   background: #f9fafb;
 }
 
+.nav__button:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
 .nav__current {
   font-size: 13px;
 }
@@ -94,4 +102,12 @@ body {
 .nav__count {
   font-size: 12px;
   opacity: 0.8;
+}
+
+/* 右上角的地图操作：保存图片 */
+.map-actions {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
 }

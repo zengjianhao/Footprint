@@ -2,6 +2,7 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import type { MapModel, MapUnit } from '../geo/types'
 import { MapInset } from './MapInset'
+import { SaveImageButton } from './SaveImageButton'
 import { Tooltip } from './Tooltip'
 import { UnitLayer } from './UnitLayer'
 import { useZoom } from './useZoom'
@@ -36,7 +37,7 @@ function unitKeyOf(target: EventTarget | Element | null): string | null {
 }
 
 /**
- * 通用的可缩放地图：填充层 + 边界层 + 悬停描边 + 跟随光标的名称标签 + 可选附图。
+ * 通用的可缩放地图：填充层 + 边界层 + 悬停描边 + 跟随光标的名称标签 + 可选附图 + 保存图片按钮。
  * 世界地图与各国精细地图共用；差异全部由 model 描述。
  * 附图里的单元与主图单元同 key，悬停 / 点击通过同一套事件委托处理。
  */
@@ -132,7 +133,7 @@ export function GeoMap<U extends MapUnit>({
         onPointerLeave={handlePointerLeave}
         onClick={handleClick}
       >
-        <g ref={groupRef}>
+        <g ref={groupRef} className="geo-map__viewport">
           <UnitLayer units={model.units} visitedIds={visitedIds} />
           {model.borders.map((layer) => (
             <path
@@ -166,6 +167,7 @@ export function GeoMap<U extends MapUnit>({
         hint={hovered ? hintFor(hovered, hoveredVisited) : undefined}
         visited={hoveredVisited}
       />
+      <SaveImageButton svgRef={svgRef} mapName={label} />
     </div>
   )
 }

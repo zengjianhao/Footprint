@@ -20,6 +20,7 @@ npm run data:us    # 重新生成美国州级边界数据（同上）
 - 世界地图：点击任何国家即标记「去过」，再点一次取消。左上角「精细地图」下方可进入中国 / 日本 / 美国的精细地图。
 - 精细地图：中国精确到市级行政区，省界比市界更粗，右下角有南海诸岛附图；日本精确到都道府县，右下角有南西诸岛附图（冲绳与奄美）；美国精确到州（含哥伦比亚特区），阿拉斯加与夏威夷按 Albers USA 投影的惯例缩放后放在左下角。附图不遮挡主图要素，放大主图时淡出；附图里的单元同样可以悬停和标记（冲绳、奄美、三沙只出现在附图里，就在附图中点击）。`‹ 世界地图` 按钮或 Esc 返回。
 - 记录足迹：点击即标记，再点一次取消，去过的单元显示为蓝色，悬停提示会说明这一下点下去会发生什么。在精细地图里标记一个单元时，它所属的国家也会在世界地图上点亮；反过来在世界地图上取消一个国家只是让它变灰，不会清空已标记的单元。记录保存在浏览器 localStorage（键 `footprint.visited.v3`，旧的 v1 / v2 会自动迁移，其中国家由已去过的单元推导补齐）。
+- 保存图片：右上角「保存图片」把当前这张地图（世界地图或正在看的精细地图）连同去过的标记保存为 PNG（3200px 宽，文件名如 `足迹-中国地图-2026-09-28.png`）。导出的总是完整地图，不受当前缩放平移影响，附图一并保留。
 - 新增国家：先在 `src/geo/types.ts` 的 `DetailCountryId` 里加上新国家 id，再在 `src/data/detailMaps.ts` 的注册表里加一项（该国在世界地图上的要素 key、数据加载、量词等），并提供对应的 `buildXxx` 模型与数据生成脚本。
 
 ## 技术栈
@@ -56,7 +57,7 @@ npm run data:us    # 重新生成美国州级边界数据（同上）
 scripts/     数据生成脚本
 src/data     数据加载（cachedLoader / useAsync）、精细地图注册表 detailMaps.ts、生成的数据文件
 src/geo      地理模型：类型、投影、附图布局、buildWorld / buildChina / buildJapan / buildUs
-src/map      地图组件：GeoMap（通用）、WorldMap、DetailMap、MapInset、Tooltip、useZoom
+src/map      地图组件：GeoMap（通用）、WorldMap、DetailMap、MapInset、Tooltip、useZoom、SaveImageButton / saveMapImage（导出 PNG）
 src/state    足迹记录（useVisited + localStorage 读写）
 src/styles   全局样式与颜色变量
 ```
